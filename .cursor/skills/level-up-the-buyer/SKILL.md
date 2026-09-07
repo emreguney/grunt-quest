@@ -33,7 +33,7 @@ These override taste, seeds, and subagent ideas.
   2. A full painted scene behind every stage. Sand tile plus a ground strip is not a scene.
   3. Terrain world map (shop street, not numbered nodes on a polyline).
   4. Cursor-driven menus (cursor sprite + frame). Keep touch hit targets. Do not drop confirm buttons that touch needs (Start, Next, Share, Try again).
-- Rename ranks or the article tagline. They are the article's words.
+- Restore clever ranks (jargon goblin, marketing god) or a clever tagline. Keep language plain.
 - Add a build step, a framework, or a second runtime file.
 
 ## Process

@@ -36,8 +36,8 @@ Keep these as primary material. Wording may trim for the 256px panel but must st
 - Four questions, in order: What do I get? How does it improve my life? What pain does it remove? Why should I trust you?
 - Assembled bow message (clear fragments): never breaks; hunt faster, eat every night; no snapped bows mid hunt; proof from last winter. You may drop "tribe" from proof. Replace with a plain proof the article still supports (fed people / sold out the winter). Do not invent a new product.
 - Ending method card, five hours: customer, desire, mechanism, message, vehicle. Vehicle last.
-- Tagline (article): `Become so good at marketing your competition thinks you're cheating.`
-- Ranks (article's words, do not rename): Jargon goblin, Funnel copier, Category definer, Marketing god.
+- Tagline (plain): `A seven minute game about how people decide to buy.` Credit the article on the title and result screens. Do not restore clever taglines.
+- Ranks (plain, do not restore goblin/god puns): They would buy, You named the desire, You copied the ads, They scrolled past.
 - Thesis: most people learn marketing backwards (vehicles first). Marketing begins inside another person's mind.
 
 Author credit on title and result. Visible name: Leon Abboud. Tweet handle: `@leonabboud`. Exact href:

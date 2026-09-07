@@ -30,7 +30,7 @@ You were spawned to own how it plays. Read this file. Read `agents/define.md` if
 - Attention is HP. **Three hearts** per stage (`G.hearts = 3` on stage enter).
 - Wrong answer or timeout calls `hit()`. At 0 hearts: `attentionLost` then retry **this stage** (reset hearts, keep global score minus `stagePoints` as today).
 - Score: +100 correct, timer stages add up to +50 speed bonus, bridge win +500.
-- Ranks from mistake count stay the article names: Marketing god / Category definer / Funnel copier / Jargon goblin.
+- Ranks from mistake count stay plain: They would buy / You named the desire / You copied the ads / They scrolled past.
 - Unlocks: `G.unlocked`. Vehicle shop must not be playable before stage 7.
 
 ## Timers

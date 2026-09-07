@@ -1,4 +1,10 @@
-# The prompt that built GRUNT QUEST
+# The prompt that built the game
+
+The shipped game is now **THE BUYER**. The first build was GRUNT QUEST (caveman / tribe). That world is retired. This file is the historical prompt. Do not put caveman copy back in the game.
+
+---
+
+# The prompt that built GRUNT QUEST (historical)
 
 Source: "How to become so good at marketing your competition thinks you're cheating" by Leon Abboud
 (https://x.com/leonabboud/article/2094443253495894440).
