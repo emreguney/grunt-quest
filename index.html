@@ -164,13 +164,13 @@ img,svg{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 .buyer-say{position:absolute;left:0;top:70px;width:66px;text-align:center;color:var(--ink)}
 
 /* bridge: two ledges, one span that grows until it meets After */
-.sea{position:relative;height:52px;border:2px solid var(--ink);background:var(--deep);overflow:hidden;
+.sea{position:relative;height:46px;border:2px solid var(--ink);background:var(--deep);overflow:hidden;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8' shape-rendering='crispEdges'><rect width='16' height='8' fill='%231f5f58'/><rect x='2' y='5' width='4' height='1' fill='%232f9d8a'/><rect x='10' y='2' width='3' height='1' fill='%232f9d8a'/></svg>");background-position:0 28px;background-repeat:repeat-x}
 .isle{position:absolute;bottom:0;height:28px;border-top:2px solid var(--ink);background:var(--sand) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='26' viewBox='0 0 16 26' shape-rendering='crispEdges'><rect width='16' height='26' fill='%23e6c98a'/><rect y='14' width='16' height='12' fill='%23c9ad74'/><rect x='2' y='14' width='3' height='1' fill='%23e6c98a'/><rect x='9' y='14' width='4' height='1' fill='%23e6c98a'/><rect x='4' y='18' width='1' height='4' fill='%237a4a2a'/><rect x='11' y='20' width='1' height='3' fill='%237a4a2a'/><rect x='0' y='24' width='16' height='2' fill='%237a4a2a'/></svg>") repeat-x}
 .isle.now{left:0;width:56px}
 .isle.after{right:0;width:56px}
 .isle .lab{position:absolute;top:3px;left:0;right:0;text-align:center}
-.span{position:absolute;bottom:24px;height:8px;box-sizing:border-box;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--amber) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8' shape-rendering='crispEdges'><rect width='9' height='8' fill='%23e08a2c'/><rect x='9' y='0' width='1' height='8' fill='%231c1a2e'/><rect x='0' y='3' width='9' height='1' fill='%23c96e20'/></svg>") repeat-x}
+.span{position:absolute;bottom:20px;height:12px;box-sizing:border-box;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--amber) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='12' viewBox='0 0 10 12' shape-rendering='crispEdges'><rect width='9' height='12' fill='%23e08a2c'/><rect x='9' y='0' width='1' height='12' fill='%231c1a2e'/><rect x='0' y='4' width='9' height='1' fill='%23c96e20'/></svg>") repeat-x}
 .span::before{content:"";position:absolute;left:0;right:0;top:-4px;height:2px;background:var(--ink)}
 .walker{position:absolute;bottom:28px;left:22px;width:8px;height:12px}
 .gauges{display:flex;gap:6px}
@@ -762,16 +762,16 @@ const STAGES = [
   ],
   play(root, api) {
     const GOOD = [
-      { t: 'Name what it costs them monthly.', p: 2, d: 0, x: 0, why: 'Pain gets a number. It is real now.' },
-      { t: 'Name the moment it got urgent.', p: 1, d: 0, x: 0, why: 'A specific moment beats a demographic.' },
-      { t: 'Show life after, in one picture.', p: 0, d: 2, x: 0, why: 'They can picture the outcome. Desire rises.' },
-      { t: 'Promise the change and say how.', p: 0, d: 1, x: -1, why: 'A promise with a mechanism. Closer and more wanted.' },
-      { t: 'Explain the steps in plain words.', p: 0, d: 0, x: -2, why: 'They can see the path. Distance collapses.' },
+      { t: 'Name the monthly cost.', p: 2, d: 0, x: 0, why: 'Pain gets a number. It is real now.' },
+      { t: 'Name when it got urgent.', p: 1, d: 0, x: 0, why: 'A specific moment beats a demographic.' },
+      { t: 'Show life after.', p: 0, d: 2, x: 0, why: 'They can picture the outcome. Desire rises.' },
+      { t: 'Promise the change, and how.', p: 0, d: 1, x: -1, why: 'A promise with a mechanism. Closer and more wanted.' },
+      { t: 'Explain the steps.', p: 0, d: 0, x: -2, why: 'They can see the path. Distance collapses.' },
       { t: 'Proof from someone like them.', p: 0, d: 0, x: -2, why: 'Believable for someone like me. Distance collapses.' },
     ];
     const TRAPS = [
-      { t: 'List all fourteen features.', p: 0, d: 0, x: 1, why: 'Trap. More to decode. The gap looks wider.' },
-      { t: 'Bigger headline. Add a gradient.', p: 0, d: 0, x: 0, why: 'Trap. Prettier is not more relevant. Nothing moved.' },
+      { t: 'List fourteen features.', p: 0, d: 0, x: 1, why: 'Trap. More to decode. The gap looks wider.' },
+      { t: 'Bigger headline. A gradient.', p: 0, d: 0, x: 0, why: 'Trap. Prettier is not more relevant. Nothing moved.' },
       { t: 'Call it cutting edge.', p: 0, d: 0, x: 1, why: 'Trap. Adjectives are not proof. Further away.' },
     ];
     const start = () => {
@@ -781,13 +781,13 @@ const STAGES = [
       const sea = el('div', 'sea'); sea.innerHTML = `<div class="isle now"><div class="lab ui">Now</div></div><div class="isle after"><div class="lab ui">After</div></div><div class="walker">${SPR.person}</div>`;
       scene.appendChild(sea);
       const gauges = el('div', 'gauges body'); scene.appendChild(gauges);
-      const hint = el('div', 'tiny row', `<span style="flex:1;color:var(--deep)">Need: Pain 3. Desire 3. Distance 0.</span><span class="left">5 left</span>`); scene.appendChild(hint);
+      const hint = el('div', 'tiny row', `<span style="flex:1;color:var(--deep)">Pain 3. Desire 3. Distance 0.</span><span class="left">5 left</span>`); scene.appendChild(hint);
       const hand = el('div', 'cards body'); scene.appendChild(hand);
       const draw = () => {
         gauges.innerHTML = [['Pain', st.p, ''], ['Desire', st.d, ''], ['Distance', st.x, 'dist']].map(([n, v, c]) => `<div class="gauge ${c}"><div class="tiny" style="margin-bottom:1px">${n} ${v}</div><div class="bar">${[0, 1, 2].map(k => `<i class="${k < v ? 'on' : ''}"></i>`).join('')}</div></div>`).join('');
         sea.querySelectorAll('.span').forEach(p => p.remove());
         const w = sea.clientWidth || 244;
-        const left = 56, right = w - 56, gap = Math.max(0, right - left);
+        const left = 52, right = w - 52, gap = Math.max(0, right - left);
         const fill = (3 - st.x) / 3;
         if (fill > 0) {
           const span = el('div', 'span');
