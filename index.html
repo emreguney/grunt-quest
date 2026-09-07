@@ -975,8 +975,6 @@ SCREENS.result = () => {
 /* ---------- boot ---------- */
 load(); drawMute();
 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.body.classList.add('reduced');
-document.fonts && document.fonts.ready.then(() => go('title')).catch(() => go('title'));
-if (!document.fonts) go('title');
 
 /* read-only debug surface for QA */
 window.BUYER = {
@@ -986,6 +984,14 @@ window.BUYER = {
   playStage: (n, opts) => { G.stage = n; G.unlocked = Math.max(G.unlocked, n); G.skipTalk = !!(opts && opts.skipTalk); go('stage'); },
 };
 window.GRUNT = window.BUYER;
+
+function boot() {
+  const m = String(location.hash || '').match(/^#stage=(\d+)/);
+  if (m) window.BUYER.playStage(+m[1], { skipTalk: true });
+  else go('title');
+}
+if (document.fonts) document.fonts.ready.then(boot).catch(boot);
+else boot();
 })();
 </script>
 </body>
