@@ -171,12 +171,13 @@ img,svg{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 .isle.after{right:0;width:56px}
 .isle .lab{position:absolute;top:3px;left:0;right:0;text-align:center}
 .deck{position:absolute;left:52px;right:52px;bottom:20px;height:12px;z-index:1}
-.span{position:absolute;top:0;height:12px;box-sizing:border-box;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--amber) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='12' viewBox='0 0 10 12' shape-rendering='crispEdges'><rect width='9' height='12' fill='%23e08a2c'/><rect x='9' y='0' width='1' height='12' fill='%231c1a2e'/><rect x='0' y='4' width='9' height='1' fill='%23c96e20'/></svg>") repeat-x}
-.deck .span:first-child{border-left:2px solid var(--ink)}
-.deck .span:last-child{border-right:2px solid var(--ink)}
-.span::before{content:"";position:absolute;left:0;right:0;top:-4px;height:2px;background:var(--ink)}
+.rail{position:absolute;left:0;top:-4px;height:2px;background:var(--ink);width:0}
+.span{position:absolute;top:0;height:12px;box-sizing:border-box;border:2px solid var(--ink);background:var(--amber) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='12' viewBox='0 0 8 12' shape-rendering='crispEdges'><rect width='8' height='12' fill='%23e08a2c'/><rect x='0' y='4' width='8' height='1' fill='%23c96e20'/></svg>") repeat-x}
 .walker{position:absolute;bottom:28px;left:22px;width:8px;height:12px;z-index:3}
-.why-line{color:var(--ink)}
+.why-line{flex:1;color:var(--ink)}
+.bridge-play{gap:3px}
+.bridge-play .cards{gap:2px}
+.bridge-play .cards .opt{min-height:16px;padding:1px 3px}
 .gauges{display:flex;gap:6px}
 .gauge{flex:1}
 .gauge .bar{height:8px;border:2px solid var(--ink);background:var(--paper);display:flex;gap:1px;padding:0}
@@ -783,10 +784,10 @@ const STAGES = [
     const PLANKS = 5;
     const start = () => {
       clearTimers(); root.innerHTML = '';
-      const scene = el('div', 'scene stack'); root.appendChild(scene);
+      const scene = el('div', 'scene stack bridge-play'); root.appendChild(scene);
       const st = { p: 0, d: 0, x: 3, picks: 0, planks: 0, used: new Set() };
       const sea = el('div', 'sea');
-      sea.innerHTML = `<div class="isle now"><div class="lab ui">Now</div></div><div class="isle after"><div class="lab ui">After</div></div><div class="deck"></div><div class="walker">${SPR.person}</div>`;
+      sea.innerHTML = `<div class="isle now"><div class="lab ui">Now</div></div><div class="isle after"><div class="lab ui">After</div></div><div class="deck"><i class="rail"></i></div><div class="walker">${SPR.person}</div>`;
       scene.appendChild(sea);
       const gauges = el('div', 'gauges body'); scene.appendChild(gauges);
       const why = el('div', 'row'); why.innerHTML = `<span class="why-line body" style="flex:1">Pick a move. Each clear one lays a plank.</span><span class="left tiny">5 left</span>`; scene.appendChild(why);
@@ -794,8 +795,10 @@ const STAGES = [
       const draw = (complete) => {
         gauges.innerHTML = [['Pain', st.p, ''], ['Desire', st.d, ''], ['Distance', st.x, 'dist']].map(([n, v, c]) => `<div class="gauge ${c}"><div class="tiny" style="margin-bottom:1px">${n} ${v}</div><div class="bar">${[0, 1, 2].map(k => `<i class="${k < v ? 'on' : ''}"></i>`).join('')}</div></div>`).join('');
         const deck = $('.deck', sea);
-        deck.innerHTML = '';
+        deck.querySelectorAll('.span').forEach(p => p.remove());
         const shown = complete ? PLANKS : st.planks;
+        const rail = $('.rail', deck);
+        rail.style.width = shown ? (shown * 100 / PLANKS) + '%' : '0';
         for (let i = 0; i < shown; i++) {
           const span = el('div', 'span');
           span.style.left = (i * 100 / PLANKS) + '%';
@@ -828,6 +831,7 @@ const STAGES = [
           const win = st.planks >= 4;
           if (win) {
             award(500); SFX.ok();
+            $('.why-line', why).textContent = good ? c.why : 'A trap, but the path was already there.';
             draw(true);
             const wlk = $('.walker', sea); let x = 22; const dest = Math.max(22, (sea.clientWidth || 244) - 40);
             const walk = every(() => { x += 6; wlk.style.left = x + 'px'; if (x >= dest) clearInterval(walk); }, 50);
