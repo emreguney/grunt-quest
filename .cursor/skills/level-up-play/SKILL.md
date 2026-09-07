@@ -41,9 +41,11 @@ Do not put a timer on the why ladder, buyer test, mechanism, positioning, or veh
 
 ## Bridge gauges
 
-Pain and desire must reach **3**. Distance must reach **0**. Five picks. Two traps in the hand. Win = walker may cross (feel animates). Fail = one heart and rebuild, or attention-lost if dead.
+Five picks. Two traps in the hand. Each **helpful** card (pain up, desire up, or distance down) lays one plank. Traps skip a plank. **Win = 4 or more planks.** On a win, draw all five planks so the walker can cross. Gauges still teach Pain / Desire / Distance, but they are not the pass/fail rule. A clearly good hand must not fail because the three meters did not max in the same five picks.
 
 Do not hide gauge names. Labels stay **Pain**, **Desire**, **Distance**. Not "P", not metaphors.
+
+Do not overlay a toast on the gorge. Put the card's `why` in a line under the gauges.
 
 Trap cards stay article-shaped: list fourteen features, bigger headline / gradient, "cutting edge".
 
@@ -113,7 +115,7 @@ Do not invent a tutorial narrator name.
 - [ ] Eight stages, vehicle last, ~7 minutes
 - [ ] Three hearts, attention-lost, stage retry, score rules intact
 - [ ] Door and filter timers still punish slowness
-- [ ] Bridge win condition is pain 3, desire 3, distance 0 in five moves
+- [ ] Bridge: four helpful cards lay a full crossing; traps skip a plank; why-line under gauges, not a toast on the sea
 - [ ] Intro states hearts, length, buyer-as-judge, vehicle last
 - [ ] First map/choice shows controls in one line
 - [ ] Labels are plain; no caveman UI
