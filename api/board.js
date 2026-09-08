@@ -20,7 +20,7 @@ function send(res, data, status) {
 }
 
 function cleanTag(s) {
-  return String(s || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3);
+  return String(s || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 12);
 }
 
 function cleanRow(raw) {
