@@ -73,9 +73,9 @@ img,svg{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 .opt[disabled]::before{opacity:0}
 .opts,.msgs{padding-left:8px}
 .btn{display:inline-flex;align-items:center;gap:4px;background:var(--amber);color:var(--ink);border:2px solid var(--ink);padding:3px 6px;font-family:var(--ui);font-size:8px;line-height:10px;text-transform:uppercase}
-.btn:hover,.btn:focus-visible{background:var(--ink);color:var(--amber)}
+.btn:hover,.btn:focus-visible,.btn.sel{background:var(--ink);color:var(--amber)}
 .btn.ghost{background:var(--paper)}
-.btn.ghost:hover,.btn.ghost:focus-visible{background:var(--ink);color:var(--paper)}
+.btn.ghost:hover,.btn.ghost:focus-visible,.btn.ghost.sel{background:var(--ink);color:var(--paper)}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .right-al{justify-content:flex-end}
 
@@ -139,8 +139,8 @@ img,svg{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 .door .ico{width:16px;height:16px;margin-bottom:2px}
 .door .ico svg{width:16px;height:16px}
 .door .lab{font-family:var(--ui);font-size:8px;line-height:8px;text-transform:uppercase}
-.door:hover::before,.door:focus-visible::before{background:var(--deep)}
-.door:hover,.door:focus-visible{outline:none;border-color:var(--paper)}
+.door:hover::before,.door:focus-visible::before,.door.sel::before{background:var(--deep)}
+.door:hover,.door:focus-visible,.door.sel{outline:none;border-color:var(--paper)}
 .door.right::before{background:var(--teal)}
 .door.wrong::before{background:var(--red)}
 .door.right,.door.wrong{color:var(--paper)}
@@ -194,6 +194,13 @@ img,svg{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 .method b{font-family:var(--ui);font-size:6px;line-height:11px;color:var(--teal)}
 
 .face{width:24px;height:24px;flex:0 0 24px;border:1px solid var(--ink);background:var(--sand)}
+
+.board{font-family:var(--ui);font-size:6px;line-height:9px;text-transform:uppercase}
+.board .row{display:grid;grid-template-columns:14px 36px 1fr;gap:4px;align-items:center;padding:1px 0}
+.board .row.me{color:var(--amber)}
+.letters{display:flex;gap:4px;justify-content:center}
+.letters b{width:20px;height:22px;border:2px solid var(--ink);background:var(--paper);display:grid;place-items:center;font-family:var(--ui);font-size:10px}
+.letters b.on{background:var(--amber)}
 
 /* toast */
 .toast{position:absolute;left:6px;right:6px;top:20px;text-align:center;z-index:6}
@@ -272,10 +279,12 @@ const SFX = {
 const SAVE_KEY = 'thebuyer.v1';
 const G = {
   screen: 'title', stage: 0, hearts: 3, score: 0, stagePoints: 0, mistakes: 0, stageMistakes: 0,
-  unlocked: 0, best: 0, timers: [], startedAt: 0, elapsed: 0, skipTalk: false,
+  unlocked: 0, best: 0, timers: [], startedAt: 0, elapsed: 0, skipTalk: false, tag: '', challenge: null,
 };
-function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}'); G.unlocked = s.unlocked || 0; G.best = s.best || 0; SFX.on = s.sound !== false; } catch (e) {} }
-function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ unlocked: G.unlocked, best: G.best, sound: SFX.on })); } catch (e) {} }
+const RANKS = ['They would buy', 'You named the desire', 'You copied the ads', 'They scrolled past'];
+const LOCAL_BOARD = 'thebuyer.v1.board';
+function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}'); G.unlocked = s.unlocked || 0; G.best = s.best || 0; G.tag = s.tag || ''; SFX.on = s.sound !== false; } catch (e) {} }
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ unlocked: G.unlocked, best: G.best, sound: SFX.on, tag: G.tag || '' })); } catch (e) {} }
 function later(fn, ms) { const id = setTimeout(fn, ms); G.timers.push(id); return id; }
 function every(fn, ms) { const id = setInterval(fn, ms); G.timers.push(id); return id; }
 function clearTimers() { G.timers.forEach(clearTimeout); G.timers.forEach(clearInterval); G.timers = []; }
@@ -321,11 +330,51 @@ muteBtn.addEventListener('click', e => { e.stopPropagation(); SFX.init(); SFX.on
 /* ---------- keyboard ---------- */
 let keyHandler = null;
 document.addEventListener('keydown', e => {
-  if (e.key === 'm' || e.key === 'M') { muteBtn.click(); return; }
-  if (keyHandler) keyHandler(e);
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (keyHandler && keyHandler(e)) return;
+  if (e.key === 'm' || e.key === 'M') muteBtn.click();
 });
 document.addEventListener('pointerdown', () => SFX.init(), { once: true });
 document.addEventListener('keydown', () => SFX.init(), { once: true });
+
+function bindKeys(buttons) {
+  const list = [...buttons].filter(Boolean);
+  if (!list.length) { keyHandler = null; return; }
+  let sel = Math.max(0, list.findIndex(b => b.classList.contains('sel') && !b.disabled));
+  const live = () => list.map((b, i) => (b.disabled ? -1 : i)).filter(i => i >= 0);
+  const paint = () => list.forEach((b, i) => b.classList.toggle('sel', i === sel && !b.disabled));
+  if (list[sel] && list[sel].disabled) sel = (live()[0] || 0);
+  paint();
+  keyHandler = e => {
+    const on = live();
+    if (!on.length) return false;
+    if (list[sel] && list[sel].disabled) sel = on[0];
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= list.length && !list[n - 1].disabled) {
+      e.preventDefault();
+      list[n - 1].click();
+      return true;
+    }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      sel = on[(on.indexOf(sel) + 1) % on.length];
+      paint(); SFX.move();
+      return true;
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      sel = on[(on.indexOf(sel) - 1 + on.length) % on.length];
+      paint(); SFX.move();
+      return true;
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (list[sel] && !list[sel].disabled) list[sel].click();
+      return true;
+    }
+    return false;
+  };
+}
 
 /* ---------- dialog (typewriter) ---------- */
 function dialog(root, pages, opts, done) {
@@ -352,7 +401,7 @@ function dialog(root, pages, opts, done) {
   }
   box.addEventListener('click', advance);
   box.setAttribute('role', 'button'); box.tabIndex = 0;
-  keyHandler = e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); advance(); } };
+  keyHandler = e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); advance(); return true; } return false; };
   show();
   return box;
 }
@@ -370,7 +419,7 @@ function options(root, items, onPick, opts) {
     list.appendChild(b);
   });
   root.appendChild(list);
-  keyHandler = e => { const n = parseInt(e.key, 10); if (n >= 1 && n <= items.length) { const b = list.children[n - 1]; if (b && !b.disabled) b.click(); } };
+  bindKeys(list.querySelectorAll('.opt'));
   return list;
 }
 
@@ -381,8 +430,7 @@ function feedback(root, ok, text, next, label) {
   root.appendChild(p);
   const b = $('.btn', p);
   b.addEventListener('click', () => { p.remove(); keyHandler = null; next(); });
-  keyHandler = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); b.click(); } };
-  b.focus({ preventScroll: true });
+  bindKeys([b]);
   return p;
 }
 
@@ -398,8 +446,7 @@ function attentionLost(retry) {
   view.appendChild(s);
   const btn = $('.btn', s);
   btn.addEventListener('click', () => { G.score -= G.stagePoints; G.stagePoints = 0; retry(); });
-  keyHandler = e => { if (e.key === 'Enter' || e.key === ' ') btn.click(); };
-  btn.focus({ preventScroll: true });
+  bindKeys([btn]);
 }
 
 /* ---------- screens ---------- */
@@ -413,7 +460,7 @@ SCREENS.title = () => {
     <div id="title">
       <img class="art" alt="A person looks at a street of shops at dusk" src="${ART.title}">
       <h1><span>The</span><span>Buyer</span></h1>
-      <p class="tag body">A seven minute game about how people decide to buy.</p>
+      <p class="tag body">${G.challenge ? `Beat ${G.challenge.tag}'s ${fmtTweet(G.challenge.score)} pts.` : 'A seven minute game about how people decide to buy.'}</p>
       <div class="start"><button class="btn" id="start">Press start</button></div>
       <div class="cont"></div>
       <p class="credit tiny">Based on the article by <a href="https://x.com/leonabboud/article/2094443253495894440" target="_blank" rel="noopener">Leon Abboud</a></p>
@@ -426,7 +473,8 @@ SCREENS.title = () => {
   }
   const startGame = () => { SFX.init(); SFX.ok(); G.stage = 0; G.score = 0; G.mistakes = 0; G.startedAt = Date.now(); go('intro'); };
   $('#start', t).addEventListener('click', startGame);
-  keyHandler = e => { if (e.key === 'Enter' || e.key === ' ') startGame(); };
+  const contBtn = $('.cont .btn', t);
+  bindKeys(contBtn ? [$('#start', t), contBtn] : [$('#start', t)]);
 };
 
 SCREENS.intro = () => {
@@ -466,21 +514,27 @@ SCREENS.map = () => {
     m.appendChild(n); nodes.push(n);
   });
   const flag = el('div', '', SPR.flag); flag.style.cssText = 'position:absolute;width:8px;height:8px;left:238px;top:30px'; m.appendChild(flag);
-  if (G.best > 0) m.appendChild(el('div', 'sign panel tiny', `Best ${fmt(G.best)}`));
+  const bits = [];
+  if (G.best > 0) bits.push(`Best ${fmt(G.best)}`);
+  if (G.challenge) bits.push(`Beat ${G.challenge.tag} ${fmt(G.challenge.score)}`);
+  if (bits.length) m.appendChild(el('div', 'sign panel tiny', bits.join(' · ')));
   view.appendChild(m);
   view.appendChild(el('div', 'ground')); view.appendChild(el('div', 'horizon'));
   const box = el('div', 'dialog panel body'); view.appendChild(box);
   function draw() {
     nodes.forEach((n, i) => n.classList.toggle('cur', i === cur));
     const st = STAGES[cur];
-    box.innerHTML = `<div class="tiny" style="color:var(--deep)">Stage ${cur + 1} of ${STAGES.length}</div><div class="label" style="margin-bottom:3px">${st.name}</div><div>${st.blurb}</div><div class="row right-al" style="margin-top:4px"><button class="btn">Enter</button></div>`;
+    box.innerHTML = `<div class="tiny" style="color:var(--deep)">Stage ${cur + 1} of ${STAGES.length} · arrows · 1-8 · enter</div><div class="label" style="margin-bottom:3px">${st.name}</div><div>${st.blurb}</div><div class="row right-al" style="margin-top:4px"><button class="btn">Enter</button></div>`;
     $('.btn', box).addEventListener('click', enter);
   }
   function enter() { SFX.ok(); G.stage = cur; go('stage'); }
   keyHandler = e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { if (cur < G.unlocked && cur < STAGES.length - 1) { cur++; SFX.move(); draw(); } }
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { if (cur > 0) { cur--; SFX.move(); draw(); } }
-    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enter(); }
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= STAGES.length && n - 1 <= G.unlocked) { e.preventDefault(); cur = n - 1; SFX.move(); draw(); return true; }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { if (cur < G.unlocked && cur < STAGES.length - 1) { cur++; SFX.move(); draw(); } return true; }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { if (cur > 0) { cur--; SFX.move(); draw(); } return true; }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enter(); return true; }
+    return false;
   };
   draw();
 };
@@ -628,6 +682,7 @@ const STAGES = [
         b.addEventListener('click', () => pick(k));
         doors.appendChild(b); return b;
       });
+      bindKeys(btns);
       const bar = $('i', timer);
       every(() => {
         const left = Math.max(0, 1 - (performance.now() - t0) / LIMIT);
@@ -728,13 +783,15 @@ const STAGES = [
       root.innerHTML = '';
       if (i >= qs.length) {
         const scene = el('div', 'scene stack'); root.appendChild(scene);
-        scene.appendChild(portrait('yes', 'nod'));
+        const row = el('div', 'row'); row.style.alignItems = 'flex-start';
+        const por = portrait('yes', 'nod'); por.style.cssText = 'position:static;flex:0 0 64px';
         const b = el('div', 'panel body', `<div class="label" style="color:var(--deep);margin-bottom:3px">The message</div>"A bow that never breaks. Hunt faster, eat every night, no snapped bows mid hunt. I used it all last winter. We ate every night."`);
-        b.style.cssText = 'position:absolute;left:72px;right:0;top:0'; scene.appendChild(b);
-        const meter = el('div', 'meter'); meter.style.cssText = 'position:absolute;left:0;right:0;top:70px'; meter.innerHTML = '<i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>'; scene.appendChild(meter);
-        const nx = el('div', 'row right-al'); nx.style.cssText = 'position:absolute;right:0;top:84px'; nx.innerHTML = '<button class="btn">Next</button>'; scene.appendChild(nx);
+        b.style.flex = '1';
+        row.appendChild(por); row.appendChild(b); scene.appendChild(row);
+        const meter = el('div', 'meter'); meter.innerHTML = '<i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>'; scene.appendChild(meter);
+        const nx = el('div', 'row right-al'); nx.innerHTML = '<button class="btn">Next</button>'; scene.appendChild(nx);
         $('.btn', nx).addEventListener('click', () => api.finish());
-        keyHandler = e => { if (e.key === 'Enter' || e.key === ' ') api.finish(); };
+        bindKeys([$('.btn', nx)]);
         return;
       }
       const q = qs[i];
@@ -816,7 +873,7 @@ const STAGES = [
         b.addEventListener('click', () => choose(k, b));
         hand.appendChild(b); return b;
       });
-      keyHandler = e => { const n = parseInt(e.key, 10); if (n >= 1 && n <= btns.length && !btns[n - 1].disabled) btns[n - 1].click(); };
+      bindKeys(btns);
       function choose(k, b) {
         const c = cards[k]; if (st.used.has(k)) return;
         st.used.add(k); b.disabled = true; st.picks++;
@@ -926,50 +983,134 @@ const STAGES = [
 },
 ];
 
+function playUrl(tag, score) {
+  const base = /^https?:/.test(location.protocol) ? location.href.split('#')[0].replace(/\/$/, '') : 'https://the-buyer.vercel.app';
+  return tag && score != null ? `${base}/#beat=${tag}-${score}` : base;
+}
+function uniqueBest(rows) {
+  const map = new Map();
+  (rows || []).forEach(r => {
+    if (!r || !r.tag) return;
+    const prev = map.get(r.tag);
+    if (!prev || r.score > prev.score || (r.score === prev.score && r.mistakes < prev.mistakes)) map.set(r.tag, r);
+  });
+  return [...map.values()].sort((a, b) => b.score - a.score || a.mistakes - b.mistakes).slice(0, 50);
+}
+function localBoard() { try { return JSON.parse(localStorage.getItem(LOCAL_BOARD) || '[]'); } catch (e) { return []; } }
+function writeLocalBoard(rows) { try { localStorage.setItem(LOCAL_BOARD, JSON.stringify(rows.slice(0, 50))); } catch (e) {} }
+function makeTweet(rank, score, tag, place, total) {
+  const url = playUrl(tag, score);
+  const placed = place && total ? ` ${place} of ${total} on the board.` : '';
+  let t = `I ranked ${rank.toUpperCase()} in THE BUYER (${fmtTweet(score)} pts) by @emrreguney, from @leonabboud's article.${placed}\n\nLesson: The vehicle comes last. Marketing begins inside another person's mind.${url ? '\n\nPlay: ' + url : ''}`;
+  if (t.length > 280) t = `I ranked ${rank.toUpperCase()} in THE BUYER (${fmtTweet(score)} pts) by @emrreguney, from @leonabboud's article.${placed}\n\nPlay: ${url}`;
+  return t;
+}
+function paintBoard(node, rows, tag) {
+  const top = (rows || []).slice(0, 5);
+  if (!top.length) { node.innerHTML = '<div class="tiny">No scores yet. You are first.</div>'; return; }
+  node.innerHTML = top.map((r, i) => `<div class="row${r.tag === tag ? ' me' : ''}"><span>${i + 1}</span><span>${r.tag}</span><span>${fmt(r.score)}</span></div>`).join('');
+}
+async function postBoard(you) {
+  const local = uniqueBest(localBoard().concat([you]));
+  writeLocalBoard(local);
+  try {
+    const r = await fetch('/api/board', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(you) });
+    if (!r.ok) throw new Error('bad');
+    return await r.json();
+  } catch (err) {
+    const idx = local.findIndex(x => x.tag === you.tag);
+    return { rows: local.slice(0, 8), place: idx >= 0 ? idx + 1 : local.length, total: local.length, you };
+  }
+}
+
 SCREENS.result = () => {
   setHud(null);
   G.elapsed = Math.round((Date.now() - (G.startedAt || Date.now())) / 1000);
   if (G.score > G.best) { G.best = G.score; save(); }
-  const m = G.mistakes;
-  const rank = m <= 2 ? 'They would buy' : m <= 6 ? 'You named the desire' : m <= 12 ? 'You copied the ads' : 'They scrolled past';
-  const line = m <= 2 ? 'You spoke to the desire, not the purchase.' : m <= 6 ? 'You are close. Keep speaking to the life they want.' : m <= 12 ? 'You copied what you could see. Look underneath.' : 'They did not understand. Say it in plain words and try again.';
-  const lesson = 'The vehicle comes last. Marketing begins inside another person\'s mind.';
-  const url = /^https?:/.test(location.protocol) ? location.href.split('#')[0] : '';
-  const tweet = `I ranked ${rank.toUpperCase()} in THE BUYER (${fmtTweet(G.score)} pts), a 7 minute game from @leonabboud's article on marketing.\n\nLesson: ${lesson}${url ? '\n\nPlay: ' + url : ''}`;
-  const good = m <= 6;
-  const s = el('div', 'scene stack');
-  s.innerHTML = `
-    <div style="display:flex;gap:6px;align-items:stretch">
-      <div class="portrait ${good ? 'nod' : 'shake'}" style="position:static;flex:0 0 64px"><img alt="The buyer" src="${good ? ART.buyerYes : ART.buyerNo}"></div>
-      <div class="panel body" style="flex:1">
-        <div class="rank">${rank}</div>
-        <div style="margin-top:3px">${line}</div>
-        <div class="row" style="margin-top:4px;justify-content:space-between"><span class="ui">Score <span style="color:var(--deep)">${fmt(G.score)}</span></span><span class="ui" style="color:var(--deep)">${Math.floor(G.elapsed / 60)}:${String(G.elapsed % 60).padStart(2, '0')}</span></div>
+  const rank = G.mistakes <= 2 ? RANKS[0] : G.mistakes <= 6 ? RANKS[1] : G.mistakes <= 12 ? RANKS[2] : RANKS[3];
+  const line = G.mistakes <= 2 ? 'You spoke to the desire, not the purchase.' : G.mistakes <= 6 ? 'You are close. Keep speaking to the life they want.' : G.mistakes <= 12 ? 'You copied what you could see. Look underneath.' : 'They did not understand. Say it in plain words and try again.';
+  const good = G.mistakes <= 6;
+  const showBoard = tag => {
+    G.tag = tag; save();
+    const you = { tag, score: G.score, mistakes: G.mistakes, rank, elapsed: G.elapsed };
+    const s = el('div', 'scene stack');
+    s.innerHTML = `
+      <div style="display:flex;gap:6px;align-items:stretch">
+        <div class="portrait ${good ? 'nod' : 'shake'}" style="position:static;flex:0 0 64px"><img alt="The buyer" src="${good ? ART.buyerYes : ART.buyerNo}"></div>
+        <div class="panel body" style="flex:1">
+          <div class="rank">${rank}</div>
+          <div style="margin-top:3px">${line}</div>
+          <div class="row" style="margin-top:4px;justify-content:space-between"><span class="ui">Score <span style="color:var(--deep)">${fmt(G.score)}</span></span><span class="tiny">${tag}</span></div>
+        </div>
       </div>
-    </div>
-    <div class="panel dark body">
-      <div class="label" style="color:var(--amber);margin-bottom:3px">The one afternoon method</div>
-      <div class="method">
-        <b>Hour 1</b><span>The customer. The urgent moment.</span>
-        <b>Hour 2</b><span>The desire. Why, until it hurts.</span>
-        <b>Hour 3</b><span>The mechanism. How, in steps.</span>
-        <b>Hour 4</b><span>The message. Pain, after, proof.</span>
-        <b>Hour 5</b><span>The vehicle. Where they look.</span>
+      <div class="panel dark body">
+        <div class="label" style="color:var(--amber);margin-bottom:3px">Board</div>
+        <div id="board" class="board"></div>
+        <div id="place" class="tiny" style="margin-top:3px;color:var(--paper)">Posting…</div>
       </div>
-    </div>
-    <div class="row" style="justify-content:space-between">
-      <button class="btn" id="share">Share on X</button><button class="btn ghost" id="copy">Copy</button><button class="btn ghost" id="again">Again</button>
-    </div>
-    <p class="tiny center" style="margin-top:2px">Read the article by <a style="color:var(--ink)" href="https://x.com/leonabboud/article/2094443253495894440" target="_blank" rel="noopener">Leon Abboud</a></p>`;
-  view.appendChild(el('div', 'ground')); view.appendChild(el('div', 'horizon'));
-  view.appendChild(s);
-  $('#share', s).addEventListener('click', () => { SFX.ok(); window.open('https://x.com/intent/post?text=' + encodeURIComponent(tweet), '_blank', 'noopener'); });
-  $('#copy', s).addEventListener('click', async e => {
-    SFX.ok(); try { await navigator.clipboard.writeText(tweet); e.target.textContent = 'Copied'; later(() => e.target.textContent = 'Copy', 1200); } catch (err) { e.target.textContent = 'Failed'; }
-  });
-  $('#again', s).addEventListener('click', () => { SFX.ok(); G.unlocked = 0; save(); go('title'); });
-  keyHandler = e => { if (e.key === 'Enter') $('#share', s).click(); };
-  G._tweet = tweet;
+      <div class="row" style="justify-content:space-between">
+        <button class="btn" id="share">Share on X</button><button class="btn ghost" id="copy">Copy</button><button class="btn ghost" id="again">Again</button>
+      </div>`;
+    view.innerHTML = '';
+    view.appendChild(el('div', 'ground')); view.appendChild(el('div', 'horizon'));
+    view.appendChild(s);
+    paintBoard($('#board', s), uniqueBest(localBoard().concat([you])), tag);
+    let tweet = makeTweet(rank, G.score, tag);
+    G._tweet = tweet;
+    const bindShare = () => {
+      $('#share', s).addEventListener('click', () => { SFX.ok(); window.open('https://x.com/intent/post?text=' + encodeURIComponent(G._tweet), '_blank', 'noopener'); });
+      $('#copy', s).addEventListener('click', async e => {
+        SFX.ok(); try { await navigator.clipboard.writeText(G._tweet); e.target.textContent = 'Copied'; later(() => e.target.textContent = 'Copy', 1200); } catch (err) { e.target.textContent = 'Failed'; }
+      });
+      $('#again', s).addEventListener('click', () => { SFX.ok(); G.unlocked = 0; save(); go('title'); });
+      bindKeys([$('#share', s), $('#copy', s), $('#again', s)]);
+    };
+    bindShare();
+    postBoard(you).then(data => {
+      const rows = data.rows || [];
+      paintBoard($('#board', s), rows, tag);
+      const place = data.place || 1, total = data.total || rows.length || 1;
+      const pct = Math.max(1, Math.round(100 * place / total));
+      $('#place', s).textContent = `You are ${place} of ${total}. Top ${pct}%.`;
+      tweet = makeTweet(rank, G.score, tag, place, total);
+      G._tweet = tweet;
+    }).catch(() => { $('#place', s).textContent = 'This device only. Share to compare.'; });
+  };
+  const askTag = () => {
+    const letters = ((G.tag || 'YOU') + 'AAA').slice(0, 3).split('');
+    let slot = 0;
+    const s = el('div', 'scene stack');
+    s.innerHTML = `
+      <div class="panel body">
+        <div class="label" style="margin-bottom:4px">Your tag</div>
+        Three letters. Then you go on the board. Arrows move. Type overwrites.
+      </div>
+      <div class="letters" id="lets"></div>
+      <div class="row right-al"><button class="btn" id="lock">Enter board</button></div>`;
+    view.appendChild(el('div', 'ground')); view.appendChild(el('div', 'horizon'));
+    view.appendChild(s);
+    const lets = $('#lets', s);
+    const paint = () => {
+      lets.innerHTML = letters.map((ch, i) => `<b class="${i === slot ? 'on' : ''}">${ch}</b>`).join('');
+      lets.querySelectorAll('b').forEach((b, i) => b.addEventListener('click', () => { slot = i; paint(); }));
+    };
+    paint();
+    const lock = () => { SFX.ok(); showBoard(letters.join('')); };
+    $('#lock', s).addEventListener('click', lock);
+    keyHandler = e => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); slot = (slot + 2) % 3; paint(); return true; }
+      if (e.key === 'ArrowRight') { e.preventDefault(); slot = (slot + 1) % 3; paint(); return true; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); letters[slot] = String.fromCharCode((letters[slot].charCodeAt(0) - 65 + 25) % 26 + 65); paint(); SFX.move(); return true; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); letters[slot] = String.fromCharCode((letters[slot].charCodeAt(0) - 65 + 1) % 26 + 65); paint(); SFX.move(); return true; }
+      if (/^[a-zA-Z]$/.test(e.key)) { letters[slot] = e.key.toUpperCase(); slot = Math.min(2, slot + 1); paint(); return true; }
+      if (e.key === 'Backspace') { e.preventDefault(); letters[slot] = 'A'; slot = Math.max(0, slot - 1); paint(); return true; }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); lock(); return true; }
+      return false;
+    };
+  };
+  view.innerHTML = '';
+  if (G.tag) showBoard(G.tag);
+  else askTag();
 };
 
 /* ---------- boot ---------- */
@@ -978,7 +1119,7 @@ if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').m
 
 /* read-only debug surface for QA */
 window.BUYER = {
-  get state() { return { screen: G.screen, stage: G.stage, hearts: G.hearts, score: G.score, mistakes: G.mistakes, unlocked: G.unlocked, best: G.best, tweet: G._tweet || null }; },
+  get state() { return { screen: G.screen, stage: G.stage, hearts: G.hearts, score: G.score, mistakes: G.mistakes, unlocked: G.unlocked, best: G.best, tag: G.tag, tweet: G._tweet || null }; },
   stages: STAGES.map(s => ({ name: s.name, blurb: s.blurb })),
   go: name => go(name),
   playStage: (n, opts) => { G.stage = n; G.unlocked = Math.max(G.unlocked, n); G.skipTalk = !!(opts && opts.skipTalk); go('stage'); },
@@ -986,7 +1127,10 @@ window.BUYER = {
 window.GRUNT = window.BUYER;
 
 function boot() {
-  const m = String(location.hash || '').match(/^#stage=(\d+)/);
+  const hash = String(location.hash || '');
+  const beat = hash.match(/beat=([A-Za-z]{1,3})-(\d+)/);
+  if (beat) G.challenge = { tag: beat[1].toUpperCase(), score: +beat[2] };
+  const m = hash.match(/stage=(\d+)/);
   if (m) window.BUYER.playStage(+m[1], { skipTalk: true });
   else go('title');
 }
@@ -996,3 +1140,4 @@ else boot();
 </script>
 </body>
 </html>
+

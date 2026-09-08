@@ -2,7 +2,7 @@
 
 A seven minute pixel game about how people decide to buy. Eight stages, each one a mechanic that is one idea from Leon Abboud's article ["How to become so good at marketing your competition thinks you're cheating"](https://x.com/leonabboud/article/2094443253495894440). You talk to one buyer. If they have to decode a sentence, they leave.
 
-Play it: https://emreguney.github.io/grunt-quest/
+Play it: https://the-buyer.vercel.app/
 
 ![Title screen](assets/screenshot-title.png)
 
@@ -21,7 +21,7 @@ Play it: https://emreguney.github.io/grunt-quest/
 
 One file, no build step. Open `index.html` in a browser, or serve the folder with any static server.
 
-Keyboard: `1` to `4` pick, `Enter` advances, arrows on the map, `M` mutes. Touch and mouse work everywhere. Progress and best score save in the browser.
+Keyboard: number keys pick, arrows move a selection, Enter or Space confirms, arrows plus 1-8 on the map, `M` mutes. Touch and mouse work everywhere. Progress, tag, and best score save in the browser. After a clear, three letters put you on the board. Share includes `@emrreguney` and a beat link.
 
 ## How it was made
 
